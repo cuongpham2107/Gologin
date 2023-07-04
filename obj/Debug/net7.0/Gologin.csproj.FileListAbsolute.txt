@@ -1,0 +1,17 @@
+/Users/phamcuong/C#/Gologin/obj/Debug/net7.0/Gologin.csproj.AssemblyReference.cache
+/Users/phamcuong/C#/Gologin/obj/Debug/net7.0/Gologin.GeneratedMSBuildEditorConfig.editorconfig
+/Users/phamcuong/C#/Gologin/obj/Debug/net7.0/Gologin.AssemblyInfoInputs.cache
+/Users/phamcuong/C#/Gologin/obj/Debug/net7.0/Gologin.AssemblyInfo.cs
+/Users/phamcuong/C#/Gologin/obj/Debug/net7.0/Gologin.csproj.CoreCompileInputs.cache
+/Users/phamcuong/C#/Gologin/bin/Debug/net7.0/Gologin
+/Users/phamcuong/C#/Gologin/bin/Debug/net7.0/Gologin.deps.json
+/Users/phamcuong/C#/Gologin/bin/Debug/net7.0/Gologin.runtimeconfig.json
+/Users/phamcuong/C#/Gologin/bin/Debug/net7.0/Gologin.dll
+/Users/phamcuong/C#/Gologin/bin/Debug/net7.0/Gologin.pdb
+/Users/phamcuong/C#/Gologin/obj/Debug/net7.0/Gologin.dll
+/Users/phamcuong/C#/Gologin/obj/Debug/net7.0/refint/Gologin.dll
+/Users/phamcuong/C#/Gologin/obj/Debug/net7.0/Gologin.pdb
+/Users/phamcuong/C#/Gologin/obj/Debug/net7.0/Gologin.genruntimeconfig.cache
+/Users/phamcuong/C#/Gologin/obj/Debug/net7.0/ref/Gologin.dll
+/Users/phamcuong/C#/Gologin/bin/Debug/net7.0/Newtonsoft.Json.dll
+/Users/phamcuong/C#/Gologin/obj/Debug/net7.0/Gologin.csproj.CopyComplete
