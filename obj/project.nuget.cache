@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "A1FPAnAXZm+/FPb5w3WOR6XyTEu5KYDPCYph23NvBCJ+pdS3blsCuRi2eVZOclgn47jjn3bFuwCALfS4AGJTmw==",
+  "dgSpecHash": "2HBuEkPP45902zkvkWLSKABbtp3d94mQWLSY3f0Oww+8RG+XZMWQdoP/kbV76GjZ5ENrzLgkHcGPwKxFhqH+cg==",
   "success": true,
-  "projectFilePath": "/Users/phamcuong/C#/Gologin/Gologin.csproj",
+  "projectFilePath": "C:\\Users\\trick\\source\\repos\\Tool-GoLogin\\Gologin.csproj",
   "expectedPackageFiles": [
-    "/Users/phamcuong/.nuget/packages/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg.sha512"
+    "C:\\Users\\trick\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512"
   ],
   "logs": []
 }

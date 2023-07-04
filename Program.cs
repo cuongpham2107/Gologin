@@ -1,9 +1,10 @@
-﻿using System;
-using System.IO;
-using System.Net.Http;
+﻿using System.IO;
+using System.IO.Compression;
 using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json;
+using System.Diagnostics;
+using Gologin;
 
 namespace GoLogin
 {
@@ -11,63 +12,62 @@ namespace GoLogin
     {
         static async Task Main(string[] args)
         {
-            HttpClient httpClient = new HttpClient();
-            string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NGEyODllMzdjYzAxMTZjYjcxMTJmYjUiLCJ0eXBlIjoiZGV2Iiwiand0aWQiOiI2NGEyYmJmMmM3Y2QwZDUwOTVhZTQxNzEifQ.bZDLKoIEAMg4ZOojttL70xvlpG4HZ51JcBZk9mCQ_NU";
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            Console.OutputEncoding = Encoding.UTF8;
+            Comman comman = new Comman();
             List<string> ArrayProfile = new List<string>();
-            string? idProfile = null; // khởi tạo biến idProfile
-            Console.WriteLine("Nhập số Profile cần tạo");
-            int number_of_profiles = int.Parse(Console.ReadLine());
+            string? idProfile = null;
             string filePath = "ArrayProfile.txt"; // Đường dẫn và tên file
-            for (int i = 0; i < number_of_profiles; i++)
+            HttpClient httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", comman.token);
+            while (true)
             {
-                
-                string result = await CreateProfile(httpClient, token);
-                Profile? profile = JsonConvert.DeserializeObject<Profile>(result);
-                if(profile != null){
-                    idProfile = profile.id; //gán giá trị cho idProfile phục vụ cho việc xoá Profile
-                    
-                    ArrayProfile.Add(profile.id);
-                    //Start profile
-                    await StartProfile(httpClient, idProfile);
-                }
-                await DeleteProfile(httpClient, idProfile, token);
-                // Ghi mảng ArrayProfile vào file txt
-                File.WriteAllLines(filePath, ArrayProfile);
-                Console.WriteLine("Mảng đã được lưu vào file txt.");
-            }
-        //     while (true)
-        //     {
-               
-        //         string? command = Console.ReadLine();
-               
-        //         if(command == "List"){
-        //             await GetList(httpClient);
-        //         }
-        //         else if(command == "Create"){
-        //             string result = await CreateProfile(httpClient, token);
-        //             Profile? profile = JsonConvert.DeserializeObject<Profile>(result);
-        //             if(profile != null){
-        //                 idProfile = profile.id; //gán giá trị cho idProfile phục vụ cho việc xoá Profile
-                       
-        //                 ArrayProfile.Add(profile.id);
-        //                 //Start profile
-        //                 await StartProfile(httpClient, idProfile);
-        //             }
-        //         }
-        //         else if(command == "Delete")
-        //         {
-        //             await DeleteProfile(httpClient, idProfile, token);
-        //         }
-        //         else if(command == "ArrayProfile"){
-        //             string filePath = "ArrayProfile.txt"; // Đường dẫn và tên file
-        //             // Ghi mảng ArrayProfile vào file txt
-        //             File.WriteAllLines(filePath, ArrayProfile);
-        //             Console.WriteLine("Mảng đã được lưu vào file txt.");
-        //         }
-        //     }
-        }
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Number of Profiles >>> ");
+                Console.ResetColor();
+                int number_of_profiles = int.Parse(Console.ReadLine());
+                for (int i = 0; i < number_of_profiles; i++)
+                {
+                    string result = await CreateProfile(httpClient, comman.token);
+                    Profile? profile = JsonConvert.DeserializeObject<Profile>(result);
+                    if (profile != null)
+                    {
+                        idProfile = profile.id;
+                        ArrayProfile.Add(profile.id);
+                        await StartProfile(httpClient, idProfile);
+                    }
+                    await DeleteProfile(httpClient, idProfile, comman.token);
 
+                    File.WriteAllLines(filePath, ArrayProfile);
+                    Console.WriteLine("Mảng IdProfile đã được lưu vào file txt.");
+                }
+                await StopChrome();
+               
+                ZipFile.CreateFromDirectory(comman.folderPath, GenerateRandomFile(comman.zipPath));
+
+                DeleteFileProfileGoLogin(comman.folderPath);
+
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine("Thư mục đã được nén thành công.");
+                Console.ResetColor();
+            }
+        }
+        public static async Task StopChrome()
+        {
+            // Tìm và tắt trình duyệt Google Chrome
+            Process[] chromeProcesses = Process.GetProcessesByName("chrome");
+            foreach (Process chromeProcess in chromeProcesses)
+            {
+                if (!chromeProcess.HasExited)
+                {
+                    await Task.Run(chromeProcess.CloseMainWindow);
+                    chromeProcess.WaitForExit(2000); // Chờ 5 giây để trình duyệt tắt
+                    if (!chromeProcess.HasExited)
+                    {
+                        await Task.Run(chromeProcess.Kill); // Khi không tắt được, sử dụng phương thức Kill để đóng trình duyệt
+                    }
+                }
+            }
+        }
         public static async Task GetList(HttpClient httpClient){
             HttpResponseMessage response = await httpClient.GetAsync("https://api.gologin.com/browser/v2");
             if(response.ReasonPhrase == "OK"){
@@ -89,10 +89,8 @@ namespace GoLogin
                 request.Content = content;
                 var response = await httpClient.SendAsync(request);
                 response.EnsureSuccessStatusCode();
-
                 // Đọc nội dung phản hồi như là một chuỗi
                 string responseBody = await response.Content.ReadAsStringAsync();
-
                 // Trả về nội dung phản hồi
                 return responseBody;
 
@@ -103,28 +101,93 @@ namespace GoLogin
             }
         }
         public static async Task DeleteProfile(HttpClient httpClient, string? id,string token){
-            var request = new HttpRequestMessage(HttpMethod.Delete, $"https://api.gologin.com/browser/{id}");
-            request.Headers.Add("Authorization", $"Bearer {token}");
-            var content = new StringContent(string.Empty);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            request.Content = content;
-            var response = await httpClient.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-            Console.WriteLine(await response.Content.ReadAsStringAsync());
+
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Delete, $"https://api.gologin.com/browser/{id}");
+                request.Headers.Add("Authorization", $"Bearer {token}");
+                var content = new StringContent(string.Empty);
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                request.Content = content;
+                var response = await httpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Lỗi: " + ex.Message);
+            }
 
         }
         public static async Task StartProfile(HttpClient httpClient, string? id){
-          
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost:36912/browser/start-profile");
-            var content = new StringContent(@"
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost:36912/browser/start-profile");
+                var content = new StringContent(@"
                                     {
                                         ""profileId"": """ + id + @""",
                                         ""sync"": true}"
-                                , null, "application/json");
-            request.Content = content;
-            var response = await httpClient.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-            Console.WriteLine(await response.Content.ReadAsStringAsync());
+                                    , null, "application/json");
+                request.Content = content;
+                var response = await httpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Lỗi: " + ex.Message);
+            }
+           
+        }
+        public static void DeleteFileProfileGoLogin(string folderPath)
+        {
+            DirectoryInfo rootDirectory = new DirectoryInfo(folderPath);
+
+            Parallel.ForEach(rootDirectory.GetDirectories(), (subDirectory) =>
+            {
+                ClearDirectory(subDirectory.FullName);
+                subDirectory.Delete();
+            });
+        }
+
+        public static void ClearDirectory(string directoryPath)
+        {
+            DirectoryInfo directory = new DirectoryInfo(directoryPath);
+
+            Parallel.ForEach(directory.GetFiles(), (file) =>
+            {
+                file.Delete();
+            });
+
+            Parallel.ForEach(directory.GetDirectories(), (subDirectory) =>
+            {
+                ClearDirectory(subDirectory.FullName);
+                subDirectory.Delete();
+            });
+        }
+        public static string GenerateRandomFile(string zipPath, int length = 5)
+        {
+            const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+            Random random = new Random();
+            char[] stringChars = new char[length];
+
+            for (int i = 0; i < length; i++)
+            {
+                stringChars[i] = chars[random.Next(chars.Length)];
+            }
+
+            string appendedString =  new string(stringChars);
+
+            // Tách tên file và phần mở rộng
+            string fileName = Path.GetFileNameWithoutExtension(zipPath);
+
+            string fileExtension = Path.GetExtension(zipPath);
+
+            string newFileName = $"{fileName}-{appendedString}{fileExtension}";
+
+            string newFilePath = Path.Combine(Path.GetDirectoryName(zipPath), newFileName);
+
+            return newFilePath;
         }
 
     }
